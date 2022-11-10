@@ -5,253 +5,253 @@ from time import time
 import mediapipe as mp
 import matplotlib.pyplot as plt
 
-# Initializing mediapipe pose class.
+# Inisialisasi kelas pose mediapipe.
 mp_pose = mp.solutions.pose
 
-# Setting up the Pose function.
+# Menyiapkan fungsi Pose.
 pose = mp_pose.Pose(static_image_mode=True, min_detection_confidence=0.3, model_complexity=2)
 
-# Initializing mediapipe drawing class, useful for annotation.
+# Inisialisasi kelas menggambar mediapipe, berguna untuk anotasi.
 mp_drawing = mp.solutions.drawing_utils 
 
 def detectPose(image, pose, display=True):
     '''
-    This function performs pose detection on an image.
-    Args:
-        image: The input image with a prominent person whose pose landmarks needs to be detected.
-        pose: The pose setup function required to perform the pose detection.
-        display: A boolean value that is if set to true the function displays the original input image, the resultant image, 
-                 and the pose landmarks in 3D plot and returns nothing.
-    Returns:
-        output_image: The input image with the detected pose landmarks drawn.
-        landmarks: A list of detected landmarks converted into their original scale.
+   Fungsi ini melakukan deteksi pose pada gambar.
+     Argumen:
+         image: Gambar input dengan orang terkemuka yang posenya perlu dideteksi.
+         pose: Fungsi pengaturan pose yang diperlukan untuk melakukan deteksi pose.
+         display: Nilai boolean yang jika disetel ke true fungsi menampilkan gambar input asli, gambar yang dihasilkan,
+                  dan pose landmark dalam plot 3D dan tidak menghasilkan apa-apa.
+     Pengembalian:
+         output_image: Gambar input dengan landmark pose yang terdeteksi digambar.
+         landmark: Daftar landmark yang terdeteksi diubah menjadi skala aslinya.
     '''
     
-    # Create a copy of the input image.
+    # Buat salinan gambar input.
     output_image = image.copy()
     
-    # Convert the image from BGR into RGB format.
+    # Ubah gambar dari BGR menjadi format RGB.
     imageRGB = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     
-    # Perform the Pose Detection.
+    # Lakukan Deteksi Pose.
     results = pose.process(imageRGB)
     
-    # Retrieve the height and width of the input image.
+    # Ambil tinggi dan lebar gambar input.
     height, width, _ = image.shape
     
-    # Initialize a list to store the detected landmarks.
+    # Inisialisasi daftar untuk menyimpan tengara yang terdeteksi.
     landmarks = []
     
-    # Check if any landmarks are detected.
+    # Periksa apakah ada landmark yang terdeteksi
     if results.pose_landmarks:
     
-        # Draw Pose landmarks on the output image.
+        # Gambarlah landmark Pose pada gambar keluaran.
         mp_drawing.draw_landmarks(image=output_image, landmark_list=results.pose_landmarks,
                                   connections=mp_pose.POSE_CONNECTIONS)
         
-        # Iterate over the detected landmarks.
+        # Ulangi pada landmark yang terdeteksi.
         for landmark in results.pose_landmarks.landmark:
             
-            # Append the landmark into the list.
+            # Tambahkan tengara ke dalam daftar.
             landmarks.append((int(landmark.x * width), int(landmark.y * height),
                                   (landmark.z * width)))
     
-    # Check if the original input image and the resultant image are specified to be displayed.
+    # Periksa apakah gambar input asli dan gambar yang dihasilkan ditentukan untuk ditampilkan.
     if display:
     
-        # Display the original input image and the resultant image.
+        # Menampilkan gambar input asli dan gambar yang dihasilkan.
         plt.figure(figsize=[22,22])
         plt.subplot(121);plt.imshow(image[:,:,::-1]);plt.title("Original Image");plt.axis('off');
         plt.subplot(122);plt.imshow(output_image[:,:,::-1]);plt.title("Output Image");plt.axis('off');
         
-        # Also Plot the Pose landmarks in 3D.
+        # Juga Plot landmark Pose dalam 3D.
         mp_drawing.plot_landmarks(results.pose_world_landmarks, mp_pose.POSE_CONNECTIONS)
         
-    # Otherwise
+    # Jika tidak
     else:
         
-        # Return the output image and the found landmarks.
+        # Kembalikan gambar keluaran dan tengara yang ditemukan.
         return output_image, landmarks
 
-# Setup Pose function for video.
+# Atur fungsi Pose untuk video.
 pose_video = mp_pose.Pose(static_image_mode=False, min_detection_confidence=0.5, model_complexity=1)
 
-# Initialize the VideoCapture object to read from the webcam.
+# Inisialisasi objek VideoCapture untuk membaca dari webcam.
 video = cv2.VideoCapture(1)
 
-# Create named window for resizing purposes
+# Buat jendela bernama untuk tujuan mengubah ukuran
 cv2.namedWindow('Pose Detection', cv2.WINDOW_NORMAL)
 
 
-# Initialize the VideoCapture object to read from a video stored in the disk.
-#video = cv2.VideoCapture('media/running.mp4')
+# Inisialisasi objek VideoCapture untuk membaca dari video yang disimpan dalam disk.
+# video = cv2.VideoCapture('media/running.mp4')
 
-# Set video camera size
+# Setel ukuran kamera video
 video.set(3,1280)
 video.set(4,960)
 
-# Initialize a variable to store the time of the previous frame.
+# Inisialisasi variabel untuk menyimpan waktu dari frame sebelumnya.
 time1 = 0
 
-# Iterate until the video is accessed successfully.
+# Ulangi hingga video berhasil diakses.
 while video.isOpened():
     
-    # Read a frame.
+    # Membaca sebuah bingkai.
     ok, frame = video.read()
     
-    # Check if frame is not read properly.
+    # Periksa apakah bingkai tidak terbaca dengan benar.
     if not ok:
         
-        # Break the loop.
+        # Putuskan lingkarannya.
         break
     
-    # Flip the frame horizontally for natural (selfie-view) visualization.
+    # Balikkan bingkai secara horizontal untuk visualisasi alami (tampilan selfie).
     frame = cv2.flip(frame, 1)
     
-    # Get the width and height of the frame
+    # Dapatkan lebar dan tinggi bingkai
     frame_height, frame_width, _ =  frame.shape
     
-    # Resize the frame while keeping the aspect ratio.
+    # Ubah ukuran bingkai sambil menjaga rasio aspek.
     frame = cv2.resize(frame, (int(frame_width * (640 / frame_height)), 640))
     
-    # Perform Pose landmark detection.
+    # Lakukan deteksi landmark Pose.
     frame, _ = detectPose(frame, pose_video, display=False)
     
-    # Set the time for this frame to the current time.
+    # Atur waktu untuk frame ini ke waktu saat ini.
     time2 = time()
     
-    # Check if the difference between the previous and this frame time > 0 to avoid division by zero.
+    # Periksa apakah perbedaan antara waktu bingkai sebelumnya dan ini > 0 untuk menghindari pembagian dengan nol.
     if (time2 - time1) > 0:
     
-        # Calculate the number of frames per second.
+        # Hitung jumlah frame per detik.
         frames_per_second = 1.0 / (time2 - time1)
         
-        # Write the calculated number of frames per second on the frame. 
+        # Tulis jumlah frame per detik yang dihitung pada frame.
         cv2.putText(frame, 'FPS: {}'.format(int(frames_per_second)), (10, 30),cv2.FONT_HERSHEY_PLAIN, 2, (0, 255, 0), 3)
     
-    # Update the previous frame time to this frame time.
-    # As this frame will become previous frame in next iteration.
+    # Perbarui waktu bingkai sebelumnya ke waktu bingkai ini.
+    # Karena frame ini akan menjadi frame sebelumnya pada iterasi berikutnya.
     time1 = time2
     
-    # Display the frame.
+    # Tampilkan bingkai.
     cv2.imshow('Pose Detection', frame)
     
-    # Wait until a key is pressed.
-    # Retreive the ASCII code of the key pressed
+    # Tunggu sampai tombol ditekan
+    # Ambil kode ASCII dari tombol yang ditekan
     k = cv2.waitKey(1) & 0xFF
     
-    # Check if 'ESC' is pressed.
+    # Periksa apakah 'ESC' ditekan.
     if(k == 27):
         
-        # Break the loop.
+        # 
         break
 
-# Release the VideoCapture object.
+# Lepaskan objek VideoCapture.
 video.release()
 
-# Close the windows.
+# Tutup jendela.
 cv2.destroyAllWindows()
 
 def calculateAngle(landmark1, landmark2, landmark3):
     '''
-    This function calculates angle between three different landmarks.
-    Args:
-        landmark1: The first landmark containing the x,y and z coordinates.
-        landmark2: The second landmark containing the x,y and z coordinates.
-        landmark3: The third landmark containing the x,y and z coordinates.
-    Returns:
-        angle: The calculated angle between the three landmarks.
+   Fungsi ini menghitung sudut antara tiga landmark yang berbeda.
+     Argumen:
+         landmark1: Landmark pertama yang berisi koordinat x,y dan z.
+         landmark2: Landmark kedua yang berisi koordinat x,y dan z.
+         landmark3: Landmark ketiga yang berisi koordinat x,y dan z.
+     Pengembalian:
+         angle: Sudut yang dihitung antara tiga landmark.
 
     '''
 
-    # Get the required landmarks coordinates.
+    # Dapatkan koordinat landmark yang diperlukan.
     x1, y1, _ = landmark1
     x2, y2, _ = landmark2
     x3, y3, _ = landmark3
 
-    # Calculate the angle between the three points
+    # Hitunglah sudut antara ketiga titik tersebut
     angle = math.degrees(math.atan2(y3 - y2, x3 - x2) - math.atan2(y1 - y2, x1 - x2))
     
-    # Check if the angle is less than zero.
+    # Periksa apakah sudutnya kurang dari nol.
     if angle < 0:
 
-        # Add 360 to the found angle.
+        # Tambahkan 360 ke sudut yang ditemukan.
         angle += 360
     
-    # Return the calculated angle.
+    # Kembalikan sudut yang dihitung.
     return angle
 
-    # Calculate the angle between the three landmarks.
+    # Hitunglah sudut antara ketiga landmark tersebut.
 angle = calculateAngle((558, 326, 0), (642, 333, 0), (718, 321, 0))
 
 # Display the calculated angle.
-print(f'The calculated angle is {angle}')
+print(f'Sudut yang dihitung adalah {angle}')
 def classifyPose(landmarks, output_image, display=False):
     '''
-    This function classifies yoga poses depending upon the angles of various body joints.
-    Args:
-        landmarks: A list of detected landmarks of the person whose pose needs to be classified.
-        output_image: A image of the person with the detected pose landmarks drawn.
-        display: A boolean value that is if set to true the function displays the resultant image with the pose label 
-        written on it and returns nothing.
-    Returns:
-        output_image: The image with the detected pose landmarks drawn and pose label written.
-        label: The classified pose label of the person in the output_image.
+   Fungsi ini mengklasifikasikan pose yoga tergantung pada sudut berbagai sendi tubuh.
+     Argumen:
+         landmark: Daftar landmark yang terdeteksi dari orang yang posenya perlu diklasifikasikan.
+         output_image: Gambar orang dengan landmark pose yang terdeteksi yang digambar.
+         display: Nilai boolean yang jika disetel ke true fungsi menampilkan gambar yang dihasilkan dengan label pose
+         tertulis di atasnya dan tidak mengembalikan apa pun.
+     Pengembalian:
+         output_image: Gambar dengan penanda pose yang terdeteksi digambar dan label pose ditulis.
+         label: Label pose rahasia dari orang di output_image.
 
     '''
     
-    # Initialize the label of the pose. It is not known at this stage.
+    # Inisialisasi label pose. Tidak diketahui pada tahap ini.
     label = 'Pose Tidak Ada'
 
-    # Specify the color (Red) with which the label will be written on the image.
+    # Tentukan warna (Merah) dengan label yang akan ditulis pada gambar
     color = (0, 0, 255)
     
-    # Calculate the required angles.
+    # Hitung sudut yang diperlukan.
     #----------------------------------------------------------------------------------------------------------------
     
-    # Get the angle between the left shoulder, elbow and wrist points. 
+    # Dapatkan sudut antara titik bahu, siku, dan pergelangan tangan kiri.
     left_elbow_angle = calculateAngle(landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value],
                                       landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value],
                                       landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value])
     
-    # Get the angle between the right shoulder, elbow and wrist points. 
+    # Dapatkan sudut antara titik bahu, siku, dan pergelangan tangan kanan.
     right_elbow_angle = calculateAngle(landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value],
                                        landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value],
                                        landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value])   
     
-    # Get the angle between the left elbow, shoulder and hip points. 
+    # Dapatkan sudut antara titik siku, bahu, dan pinggul kiri.
     left_shoulder_angle = calculateAngle(landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value],
                                          landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value],
                                          landmarks[mp_pose.PoseLandmark.LEFT_HIP.value])
 
-    # Get the angle between the right hip, shoulder and elbow points. 
+    # Dapatkan sudut antara titik pinggul, bahu, dan siku kanan.
     right_shoulder_angle = calculateAngle(landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value],
                                           landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value],
                                           landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value])
 
-    # Get the angle between the left hip, knee and ankle points. 
+    # Dapatkan sudut antara titik pinggul, lutut, dan pergelangan kaki kiri.
     left_knee_angle = calculateAngle(landmarks[mp_pose.PoseLandmark.LEFT_HIP.value],
                                      landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value],
                                      landmarks[mp_pose.PoseLandmark.LEFT_ANKLE.value])
 
-    # Get the angle between the right hip, knee and ankle points 
+    # Dapatkan sudut antara titik pinggul, lutut, dan pergelangan kaki kanan
     right_knee_angle = calculateAngle(landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value],
                                       landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value],
                                       landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value])
     
     #----------------------------------------------------------------------------------------------------------------
     
-    # Check if it is the warrior II pose or the T pose.
-    # As for both of them, both arms should be straight and shoulders should be at the specific angle.
+    # Periksa apakah itu pose warrior II atau pose T.
+    # Adapun keduanya, kedua lengan harus lurus dan bahu harus pada sudut tertentu.
     #----------------------------------------------------------------------------------------------------------------
     
-    # Check if the both arms are straight.
+    # Periksa apakah kedua lengan lurus.
     if left_elbow_angle > 165 and left_elbow_angle < 195 and right_elbow_angle > 165 and right_elbow_angle < 195:
 
-        # Check if shoulders are at the required angle.
+        # Periksa apakah bahu berada pada sudut yang diperlukan.
         if left_shoulder_angle > 80 and left_shoulder_angle < 110 and right_shoulder_angle > 80 and right_shoulder_angle < 110:
 
-    # Check if it is the warrior II pose.
+    # Periksa apakah itu pose warrior II
     #----------------------------------------------------------------------------------------------------------------
 
             # Check if one leg is straight.
@@ -265,7 +265,7 @@ def classifyPose(landmarks, output_image, display=False):
                         
     #----------------------------------------------------------------------------------------------------------------
     
-    # Check if it is the T pose.
+    # Periksa apakah itu pose T
     #----------------------------------------------------------------------------------------------------------------
     
             # Check if both legs are straight
@@ -276,10 +276,10 @@ def classifyPose(landmarks, output_image, display=False):
 
     #----------------------------------------------------------------------------------------------------------------
     
-    # Check if it is the tree pose.
+    # Periksa apakah itu pose pohon.
     #----------------------------------------------------------------------------------------------------------------
     
-    # Check if one leg is straight
+    # Periksa apakah satu kaki lurus
     if left_knee_angle > 165 and left_knee_angle < 195 or right_knee_angle > 165 and right_knee_angle < 195:
 
         # Check if the other leg is bended at the required angle.
@@ -290,88 +290,72 @@ def classifyPose(landmarks, output_image, display=False):
                 
     #----------------------------------------------------------------------------------------------------------------
     
-    # Check if the pose is classified successfully
+    # Periksa apakah posenya berhasil diklasifikasikan
     if label != 'Unknown Pose':
         
-        # Update the color (to green) with which the label will be written on the image.
+        # Perbarui warna (menjadi hijau) dengan label yang akan ditulis pada gambar.
         color = (0, 255, 0)  
     
-    # Write the label on the output image. 
+    # Tulis label pada gambar keluaran.
     cv2.putText(output_image, label, (10, 30),cv2.FONT_HERSHEY_PLAIN, 2, color, 2)
     
-    # Check if the resultant image is specified to be displayed.
+    # Periksa apakah gambar yang dihasilkan ditentukan untuk ditampilkan.
     if display:
     
-        # Display the resultant image.
+        # Menampilkan gambar yang dihasilkan.
         plt.figure(figsize=[10,10])
         plt.imshow(output_image[:,:,::-1]);plt.title("Output Image");plt.axis('off');
         
     else:
         
-        # Return the output image and the classified label.
+        # Kembalikan gambar keluaran dan label rahasia.
         return output_image, label
 
-# import math
-# import cv2
-# import numpy as np
-# from time import time
-# import mediapipe as mp
-# import matplotlib.pyplot as plt
-
-# # Initializing mediapipe pose class.
-# mp_pose = mp.solutions.pose
-
-# # Setting up the Pose function.
-# pose = mp_pose.Pose(static_image_mode=True, min_detection_confidence=0.3, model_complexity=2)
-
-# # Initializing mediapipe drawing class, useful for annotation.
-# mp_drawing = mp.solutions.drawing_utils 
-# # page 
 
 # Setup Pose function for video.
 pose_video = mp_pose.Pose(static_image_mode=False, min_detection_confidence=0.5, model_complexity=1)
-#  def to_pixel_coords(relative_coords):
+# def to_pixel_coords(relative_coords):
 #             return tuple(round(coord * dimension) for coord, dimension in zip(relative_coords, SCREEN_DIMENSIONS))
 
-# Initialize the VideoCapture object to read from the webcam.
+# Inisialisasi objek VideoCapture untuk membaca dari webcam.
 camera_video = cv2.VideoCapture(0)
 camera_video.set(3,1280)
 camera_video.set(4,960)
 
-# Initialize a resizable window.
+# Inisialisasi jendela yang dapat diubah ukurannya.
 cv2.namedWindow('Pose Classification', cv2.WINDOW_NORMAL)
 
-# Iterate until the webcam is accessed successfully.
+# Ulangi hingga webcam berhasil diakses.
 while camera_video.isOpened():
     
-    # Read a frame.
+    # Membaca sebuah bingkai.
     ok, frame = camera_video.read()
     
-    # Check if frame is not read properly.
+    # Periksa apakah bingkai tidak terbaca dengan benar.
     if not ok:
         
-        # Continue to the next iteration to read the next frame and ignore the empty camera frame.
+        # Lanjutkan ke iterasi berikutnya untuk membaca frame berikutnya dan mengabaikan frame kamera yang kosong.
         continue
     
-    # Flip the frame horizontally for natural (selfie-view) visualization.
+    # Balikkan bingkai secara horizontal untuk visualisasi alami (tampilan selfie).
     frame = cv2.flip(frame, 1)
     
-    # Get the width and height of the frame
+    # Dapatkan lebar dan tinggi bingkai
     frame_height, frame_width, _ =  frame.shape
     
-    # Resize the frame while keeping the aspect ratio.
+    # Ubah ukuran bingkai sambil menjaga rasio aspek.
     frame = cv2.resize(frame, (int(frame_width * (640 / frame_height)), 640))
     
-    # Perform Pose landmark detection.
+    # Lakukan deteksi landmark Pose.
     frame, landmarks = detectPose(frame, pose_video, display=False)
     
-    # Check if the landmarks are detected.
+    # Periksa apakah tengara terdeteksi.
     if landmarks:
         
-        # Perform the Pose Classification.
+        # Lakukan Klasifikasi Pose.
         frame, _ = classifyPose(landmarks, frame, display=False)
     
-    # Display the frame.
+    # Tampilkan bingkai.
     cv2.imshow('Pose Classification', frame)
     
     # Wait until a key is pressed.
