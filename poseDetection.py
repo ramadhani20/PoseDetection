@@ -312,7 +312,7 @@ def classifyPose(landmarks, output_image, display=False):
         return output_image, label
 
 
-# Setup Pose function for video.
+# Atur fungsi Pose untuk video.
 pose_video = mp_pose.Pose(static_image_mode=False, min_detection_confidence=0.5, model_complexity=1)
 # def to_pixel_coords(relative_coords):
 #             return tuple(round(coord * dimension) for coord, dimension in zip(relative_coords, SCREEN_DIMENSIONS))
