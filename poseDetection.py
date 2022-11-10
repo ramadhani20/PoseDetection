@@ -254,13 +254,13 @@ def classifyPose(landmarks, output_image, display=False):
     # Periksa apakah itu pose warrior II
     #----------------------------------------------------------------------------------------------------------------
 
-            # Check if one leg is straight.
+            # Periksa apakah satu kaki lurus.
             if left_knee_angle > 165 and left_knee_angle < 195 or right_knee_angle > 165 and right_knee_angle < 195:
 
-                # Check if the other leg is bended at the required angle.
+                # Periksa apakah kaki lainnya ditekuk pada sudut yang diperlukan.
                 if left_knee_angle > 90 and left_knee_angle < 120 or right_knee_angle > 90 and right_knee_angle < 120:
 
-                    # Specify the label of the pose that is Warrior II pose.
+                    # Tentukan label posenya yaitu pose Warrior II.
                     label = 'Warrior II Pose' 
                         
     #----------------------------------------------------------------------------------------------------------------
@@ -268,10 +268,10 @@ def classifyPose(landmarks, output_image, display=False):
     # Periksa apakah itu pose T
     #----------------------------------------------------------------------------------------------------------------
     
-            # Check if both legs are straight
+            # Periksa apakah kedua kaki lurus
             if left_knee_angle > 160 and left_knee_angle < 195 and right_knee_angle > 160 and right_knee_angle < 195:
 
-                # Specify the label of the pose that is tree pose.
+                # Tentukan label posenya yaitu pose pohon.
                 label = 'T Pose'
 
     #----------------------------------------------------------------------------------------------------------------
@@ -282,10 +282,10 @@ def classifyPose(landmarks, output_image, display=False):
     # Periksa apakah satu kaki lurus
     if left_knee_angle > 165 and left_knee_angle < 195 or right_knee_angle > 165 and right_knee_angle < 195:
 
-        # Check if the other leg is bended at the required angle.
+        # Periksa apakah kaki lainnya ditekuk pada sudut yang diperlukan.
         if left_knee_angle > 315 and left_knee_angle < 335 or right_knee_angle > 25 and right_knee_angle < 45:
 
-            # Specify the label of the pose that is tree pose.
+            # Tentukan label posenya yaitu pose pohon.
             label = 'Tree Pose'
                 
     #----------------------------------------------------------------------------------------------------------------
@@ -358,16 +358,16 @@ while camera_video.isOpened():
     # Tampilkan bingkai.
     cv2.imshow('Pose Classification', frame)
     
-    # Wait until a key is pressed.
-    # Retreive the ASCII code of the key pressed
+    # Tunggu hingga tombol ditekan. 
+    # Ambil kode ASCII dari tombol yang ditekan
     k = cv2.waitKey(1) & 0xFF
     
-    # Check if 'ESC' is pressed.
+    # Periksa apakah 'ESC' ditekan.
     if(k == 27):
         
-        # Break the loop.
+        # Putuskan lingkarannya.
         break
 
-# Release the VideoCapture object and close the windows.
+# Lepaskan objek VideoCapture dan tutup jendela.
 camera_video.release()
 cv2.destroyAllWindows()
